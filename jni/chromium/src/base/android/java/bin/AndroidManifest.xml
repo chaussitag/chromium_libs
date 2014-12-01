@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- this file is auto generated -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.chromium.base"
-          android:versionName="1.0"
-          android:versionCode="1">
-    <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="16"/>
-</manifest>
