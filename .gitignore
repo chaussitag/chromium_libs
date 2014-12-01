@@ -2,8 +2,12 @@ gen/
 bin/
 obj/
 libs/
+jni_gen/
 .classpath
 .cproject
 .project
 project.properties
+
+jni/chromium/build/out/
+jni/chromium/libbase.so
 

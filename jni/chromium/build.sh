@@ -11,4 +11,4 @@ elif [ ! -f ${NDK_ROOT}/build/core/main.mk ]; then
 fi
 
 make NDK_ROOT=${NDK_ROOT} -C ${DIR_CONTAINS_THIS_SCRIPT}/build libbase.cr.so
-cp  ${DIR_CONTAINS_THIS_SCRIPT}/build/out/Debug/lib.target/libbase.cr.so ${DIR_CONTAINS_THIS_SCRIPT}/libase.so
+cp  ${DIR_CONTAINS_THIS_SCRIPT}/build/out/Debug/lib.target/libbase.cr.so ${DIR_CONTAINS_THIS_SCRIPT}/libbase.so
