@@ -1,4 +1,4 @@
 chromium_libs
 =============
 
-some great libraries such as libbase,  porting from chromium opensource project, for android ndk project use.
+some great libraries from chromium opensource project, such as libbase, ported for android ndk project to make use of.
