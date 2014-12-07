@@ -24,7 +24,10 @@
 
 namespace app {
 
-static jstring GetString(JNIEnv* env, jclass jcaller) {
+static jstring GetString(JNIEnv* env, jobject jcaller) {
+    // demonstrate calling java method from native code
+    Java_HelloJni_someJavaMethod(env, jcaller, base::android::ConvertUTF8ToJavaString(env, "[[hello from native]]").Release());
+
     return base::android::ConvertUTF8ToJavaString(env,
             "[[从jni传回的字符串]]").Release();
 }

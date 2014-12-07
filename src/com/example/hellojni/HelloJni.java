@@ -15,15 +15,18 @@
  */
 package com.example.hellojni;
 
+import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 
 import android.app.Activity;
+import android.util.Log;
 import android.widget.TextView;
 import android.os.Bundle;
 
 @JNINamespace("app")
 public class HelloJni extends Activity
 {
+    private static final String TAG = HelloJni.class.getSimpleName();
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -40,35 +43,15 @@ public class HelloJni extends Activity
         nativeLogVendor();
     }
 
-//    @CalledByNative
-//    public void anything() {
-//    }
+    @CalledByNative
+    private void someJavaMethod(String message) {
+        Log.d(TAG, "SomeJavaMethod(), message from native: " + message);
+    }
 
     /* A native method that is implemented by the
      * 'hello-jni' native library, which is packaged
      * with this application.
      */
-    private static native String nativeGetString();
+    private native String nativeGetString();
     private static native void nativeLogVendor();
-
-    /* This is another native method declaration that is *not*
-     * implemented by 'hello-jni'. This is simply to show that
-     * you can declare as many native methods in your Java code
-     * as you want, their implementation is searched in the
-     * currently loaded native libraries only the first time
-     * you call them.
-     *
-     * Trying to call this function will result in a
-     * java.lang.UnsatisfiedLinkError exception !
-     */
-    //public static native String  unimplementedStringFromJNI();
-
-    /* this is used to load the 'hello-jni' library on application
-     * startup. The library has already been unpacked into
-     * /data/data/com.example.hellojni/lib/libhello-jni.so at
-     * installation time by the package manager.
-     */
-//    static {
-//        System.loadLibrary("hello-jni");
-//    }
 }
