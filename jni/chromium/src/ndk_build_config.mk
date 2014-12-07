@@ -9,4 +9,4 @@ else
 endif
 endif
 
-$(BILD_TYPE "$(BUILD_TYPE)")
+#$(info "BILD_TYPE $(BUILD_TYPE)")
