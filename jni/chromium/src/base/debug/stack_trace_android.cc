@@ -5,7 +5,19 @@
 #include "base/debug/stack_trace.h"
 
 #include <android/log.h>
-#include <unwind.h>
+// ====================================================================================================
+// modified by daiguozhou, to workaround ndk-build error.
+//     for ndk-build, the unwind.h used is located at
+//     $NDK_ROOT/sources/cxx-stl/gabi++/include/unwind.h,
+//     which does not have _Unwind_Backtrace been declared,
+//     resulting this file fail to build.
+//     to resolve this, i copy the following file to
+//     directory chromium/src/gcc and including it here,
+//     $NDK_ROOT/toolchains/arm-linux-androideabi-4.8/prebuilt/linux-x86_64/lib/gcc/arm-linux-androideabi/4.8/include/unwind.h
+//
+//#include <unwind.h>
+#include "gcc/unwind.h"
+// ====================================================================================================
 
 #include "base/debug/proc_maps_linux.h"
 #include "base/strings/stringprintf.h"

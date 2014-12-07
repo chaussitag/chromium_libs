@@ -2,12 +2,22 @@ gen/
 bin/
 obj/
 libs/
-jni_gen/
+jni/jni_header_gen/
+
+## this is an auto-generated empty file
+jni/jni_header_deps.cpp
+
 .classpath
 .cproject
 .project
 project.properties
 
+*.pyc
+
 jni/chromium/build/out/
 jni/chromium/libbase.so
 
+jni/chromium/src/jni_header_gen/
+
+## this is an auto-generated empty file
+jni/chromium/src/base/base_jni_header_deps.cc
