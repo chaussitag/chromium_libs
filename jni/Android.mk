@@ -21,10 +21,15 @@ APP_JNI_HEADERS := \
 	$(APP_JNI_HEADER_OUTPUT_DIR)/HelloJni_jni.h \
 	$(APP_JNI_HEADER_OUTPUT_DIR)/HelloJniApplication_jni.h
 
+APP_JAVA_SRC_PATH := $(LOCAL_PATH)/../src/com/example/hellojni
+
+## guard the jni header related targets to suppress ndk build warnings,
+## because this file may be included several times during ndk build
+ifndef APP_JNI_HEADERS_TARGETS_GUARD
+APP_JNI_HEADERS_TARGETS_GUARD := ""
+
 $(LOCAL_PATH)/jni_header_deps.cpp : $(APP_JNI_HEADERS)
 	@touch $@
-
-APP_JAVA_SRC_PATH := $(LOCAL_PATH)/../src/com/example/hellojni
 $(APP_JNI_HEADERS): PRIVATE_JNI_GENERATOR := $(LOCAL_PATH)/chromium/src/base/android/jni_generator/jni_generator.py
 $(APP_JNI_HEADERS): $(APP_JNI_HEADER_OUTPUT_DIR)/%_jni.h : $(APP_JAVA_SRC_PATH)/%.java
 	@ if [ ! -d $(APP_JNI_HEADER_OUTPUT_DIR) ]; then \
@@ -34,6 +39,18 @@ $(APP_JNI_HEADERS): $(APP_JNI_HEADER_OUTPUT_DIR)/%_jni.h : $(APP_JAVA_SRC_PATH)/
 	--includes base/android/jni_generator/jni_generator_helper.h --optimize_generation 0 \
 	--ptr_type long
 	@echo "[jni_generator]          : $(notdir $@) <= $(notdir $<)"
+
+clean: clean_app_jni_headers
+.PHONY: clean_app_jni_headers
+clean_app_jni_headers: PRIVATE_JNI_HEADER_OUTPUT_DIR := $(APP_JNI_HEADER_OUTPUT_DIR)
+clean_app_jni_headers:
+	@ if [ -d $(PRIVATE_JNI_HEADER_OUTPUT_DIR) ]; then \
+		rm -fr $(PRIVATE_JNI_HEADER_OUTPUT_DIR); \
+	fi
+	@echo "auto-generated jni headers for app cleaned"
+
+endif ## APP_JNI_HEADERS_TARGETS_GUARD
+
 
 LOCAL_C_INCLUDES := $(LOCAL_C_INCLUDES) $(APP_JNI_HEADER_OUTPUT_DIR)
 
