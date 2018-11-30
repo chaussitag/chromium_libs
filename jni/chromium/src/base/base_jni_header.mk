@@ -7,8 +7,8 @@ BASE_JNI_HEADER_OUTPUT_DIR := $(CHROMIUM_SRC_DIR)/jni_header_gen/base/jni
 BASE_JAVA_SRC_PATH := $(LOCAL_PATH)/android/java/src/org/chromium/base
 
 BASE_JNI_HEADERS_1 := \
-	    $(BASE_JNI_HEADER_OUTPUT_DIR)/ApplicationStatus_jni.h \
-	    $(BASE_JNI_HEADER_OUTPUT_DIR)/BuildInfo_jni.h \
+		$(BASE_JNI_HEADER_OUTPUT_DIR)/ApplicationStatus_jni.h \
+		$(BASE_JNI_HEADER_OUTPUT_DIR)/BuildInfo_jni.h \
 		$(BASE_JNI_HEADER_OUTPUT_DIR)/CommandLine_jni.h \
 		$(BASE_JNI_HEADER_OUTPUT_DIR)/ContentUriUtils_jni.h \
 		$(BASE_JNI_HEADER_OUTPUT_DIR)/CpuFeatures_jni.h \
