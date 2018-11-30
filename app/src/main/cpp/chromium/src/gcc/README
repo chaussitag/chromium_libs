@@ -1,0 +1,13 @@
+// ======================================================================================
+// daiguozhou created this folder to workaround ndk build error
+// caused by using _Unwind_Backtrace by 'include <unwind.h>'
+// files here are copied from following folder:
+//     NDK_ROOT/toolchains/arm-linux-androideabi-4.8/prebuilt/linux-x86_64/
+// lib/gcc/arm-linux-androideabi/4.8/include
+//
+// For ndk-build, if defined 'APP_STL := stlport_shared' in the Application.mk,
+// the unwind.h used is located at $NDK_ROOT/sources/cxx-stl/gabi++/include/unwind.h,
+// which does not have _Unwind_Backtrace been declared,
+// resulting source code 'include <unwind.h>' fail to build.
+// to resolve this, 'include "gcc/unwind.h" instead of 'include <unwind.h>'.
+// ======================================================================================

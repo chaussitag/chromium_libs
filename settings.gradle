@@ -1,0 +1,2 @@
+include ':app', ':chromium_base_android'
+project(':chromium_base_android').projectDir = new File('app/src/main/cpp/chromium/src/base/android/java')
