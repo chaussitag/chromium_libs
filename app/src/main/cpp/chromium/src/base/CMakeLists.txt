@@ -250,7 +250,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
   set(JNI_GENERATOR ${CMAKE_CURRENT_LIST_DIR}/android/jni_generator/jni_generator.py)
   message(STATUS "JNI_GENERATOR: ${JNI_GENERATOR}")
 
-  set(BASE_JNI_HEADER_OUTPUT_DIR ${CMAKE_BINARY_DIR}/jni_header_gen/base/jni)
+  set(BASE_JNI_HEADER_OUTPUT_DIR ${CMAKE_BINARY_DIR}/chromium_jni_header_gen/base/jni)
   message(STATUS "BASE_JNI_HEADER_OUTPUT_DIR: ${BASE_JNI_HEADER_OUTPUT_DIR}")
 
   set(BASE_JAVA_SRC_PATH ${CMAKE_CURRENT_LIST_DIR}/android/java/src/org/chromium/base)

@@ -18,7 +18,7 @@ set(JNI_GENERATOR
         ${CMAKE_CURRENT_LIST_DIR}/chromium/src/base/android/jni_generator/jni_generator.py)
 message(STATUS "JNI_GENERATOR: ${JNI_GENERATOR}")
 
-set(APP_JNI_HEADER_OUTPUT_DIR ${CMAKE_BINARY_DIR}/jni_header_gen)
+set(APP_JNI_HEADER_OUTPUT_DIR ${CMAKE_BINARY_DIR}/app_jni_header_gen)
 message(STATUS "APP_JNI_HEADER_OUTPUT_DIR: ${APP_JNI_HEADER_OUTPUT_DIR}")
 
 set(APP_JAVA_SRC_PATH ${CMAKE_CURRENT_LIST_DIR}/../java/example/com/hello_chromium_libs)
