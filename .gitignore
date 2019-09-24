@@ -1,0 +1,10 @@
+*.iml
+*.pyc
+.gradle
+.DS_Store
+/local.properties
+/gradle.properties
+/gradlew
+/gradlew.bat
+/gradle
+/.idea
