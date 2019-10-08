@@ -19,6 +19,7 @@
 #include "base/android/build_info.h"
 #include "base/android/jni_string.h"
 #include "base/logging.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 
 #include <android/log.h>
@@ -45,13 +46,6 @@ void JNI_HelloChromiumLibs_LogVendor(JNIEnv *env) {
     TRACE_EVENT0("jni", "JNI_HelloChromiumLibs_LogVendor");
 
     base::android::BuildInfo *build_info = base::android::BuildInfo::GetInstance();
-//    __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG,
-//                        "build-info: device %s, model %s, brand %s, "
-//                        "android_build_id %s, package_name %s, build_type %s, "
-//                        "abi_name: abi %s",
-//                        build_info->device(), build_info->model(), build_info->brand(),
-//                        build_info->android_build_id(), build_info->package_name(),
-//                        build_info->build_type(), build_info->abi_name());
     LOG(INFO) << "build-info: device: " << build_info->device()
               << ", model: " << build_info->model()
               << ", brand: " << build_info->brand()
@@ -64,5 +58,22 @@ void JNI_HelloChromiumLibs_LogVendor(JNIEnv *env) {
             << ", default verbosity = " << logging::GetVlogVerbosity();
 }
 
+void JNI_HelloChromiumLibs_PostTask(JNIEnv *env) {
+    auto task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
+            {base::TaskPriority::USER_VISIBLE});
+    task_runner->PostTask(FROM_HERE, base::BindOnce([] () -> void {
+        LOG(INFO) << "single-thread-task1, thread id: " << base::PlatformThread::CurrentId();
+        base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+    }));
+
+    task_runner->PostTask(FROM_HERE, base::BindOnce([] () -> void {
+        LOG(INFO) << "single-thread-task2, thread id: " << base::PlatformThread::CurrentId();
+        base::PlatformThread::Sleep(base::TimeDelta::FromSeconds(1));
+    }));
+
+    base::PostTask(FROM_HERE, base::BindOnce([] () -> void {
+        LOG(INFO) << "thread-pool-task, thread id: " << base::PlatformThread::CurrentId();
+    }));
+}
 
 } // namespace app

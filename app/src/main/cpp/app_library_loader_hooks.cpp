@@ -5,6 +5,7 @@
 #include "app_library_loader_hooks.h"
 
 #include "base/logging.h"
+#include "base/task/thread_pool/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 
 namespace app {
@@ -28,6 +29,9 @@ bool AppLibraryLoaded(JNIEnv* env, jclass clazz,
                          false);   // Tick count
     VLOG(0) << "AppLibraryLoaded: log level = " << logging::GetMinLogLevel()
             << ", default verbosity = " << logging::GetVlogVerbosity();
+
+
+    base::ThreadPoolInstance::CreateAndStartWithDefaultParams("hello_chromium_libs");
 
     return true;
 }

@@ -51,6 +51,7 @@ public class HelloChromiumLibs extends AppCompatActivity {
         tv.setText(nativeGetString());
 
         nativeLogVendor();
+        nativePostTask();
     }
 
     @Override
@@ -76,6 +77,7 @@ public class HelloChromiumLibs extends AppCompatActivity {
      */
     private native String nativeGetString();
     private static native void nativeLogVendor();
+    private static native void nativePostTask();
 
     private static String generateTracingFilePath() {
         String state = Environment.getExternalStorageState();
