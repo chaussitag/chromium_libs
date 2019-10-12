@@ -5,6 +5,8 @@ import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.base.CommandLine;
@@ -20,11 +22,15 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.V;
+
 @JNINamespace("app")
-public class HelloChromiumLibs extends AppCompatActivity {
-    private static final String TAG = HelloChromiumLibs.class.getSimpleName();
+public class MainActivity extends AppCompatActivity {
+    private static final String TAG = MainActivity.class.getSimpleName();
 
     private TraceToFile mTraceToFile = new TraceToFile();
+    private TextView mTextView;
+    private long mNativeObj;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +38,7 @@ public class HelloChromiumLibs extends AppCompatActivity {
 
         // Initializing the command line must occur before loading the library.
         if (!CommandLine.isInitialized()) {
-            ((HelloJniApplication) getApplication()).initCommandLine();
+            ((HelloChromiumLibsApplication) getApplication()).initCommandLine();
         }
 
         try {
@@ -41,17 +47,38 @@ public class HelloChromiumLibs extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        mTraceToFile.startTracing(generateTracingFilePath(), "");
-
-
         setContentView(R.layout.activity_hello_chromium_libs);
 
+        mNativeObj = nativeInit();
+
         // Example of a call to a native method
-        TextView tv = (TextView) findViewById(R.id.sample_text);
-        tv.setText(nativeGetString());
+        mTextView = findViewById(R.id.sample_text);
+        mTextView.setText(nativeGetString());
+
+        Button startUpdateTextButton = findViewById(R.id.start_update_text);
+        startUpdateTextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                nativeStartUpdateTextViewRepeatedly(mNativeObj);
+            }
+        });
+
+        Button stopUpdateTextButton = findViewById(R.id.stop_update_text);
+        stopUpdateTextButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                nativeStopUpdateTextView(mNativeObj);
+            }
+        });
 
         nativeLogVendor();
-        nativePostTask();
+        nativePostTaskExamples();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mTraceToFile.startTracing(generateTracingFilePath(), "");
     }
 
     @Override
@@ -63,21 +90,19 @@ public class HelloChromiumLibs extends AppCompatActivity {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        //mTraceToFile.stopTracing();
+        nativeDestroy(mNativeObj);
     }
 
     @CalledByNative
     private void someJavaMethod(String message) {
         Log.d(TAG, "SomeJavaMethod(), message from native: " + message);
+        mTextView.setText(message);
     }
 
-    /**
-     * A native method that is implemented by the 'native-lib' native library,
-     * which is packaged with this application.
-     */
-    private native String nativeGetString();
-    private static native void nativeLogVendor();
-    private static native void nativePostTask();
+    @CalledByNative
+    private void updateTextView(String text) {
+        mTextView.setText(text);
+    }
 
     private static String generateTracingFilePath() {
         String state = Environment.getExternalStorageState();
@@ -96,5 +121,15 @@ public class HelloChromiumLibs extends AppCompatActivity {
                 dir, "chrome-profile-results-" + formatter.format(new Date()));
         return file.getPath();
     }
+
+    private static native void nativeLogVendor();
+    private static native void nativePostTaskExamples();
+
+    private native String nativeGetString();
+
+    private native long nativeInit();
+    private native void nativeStartUpdateTextViewRepeatedly(long nativeMainActivityJni);
+    private native void nativeStopUpdateTextView(long nativeMainActivityJni);
+    private native void nativeDestroy(long nativeMainActivityJni);
 
 }

@@ -14,7 +14,7 @@ add_custom_command(OUTPUT ${APP_JNI_HEADER_OUTPUT_DIR}
 )
 
 list(APPEND APP_JAVA_NAMES
-            HelloChromiumLibs
+            MainActivity
             TraceToFile
 )
 foreach(JAVA_NAME ${APP_JAVA_NAMES})

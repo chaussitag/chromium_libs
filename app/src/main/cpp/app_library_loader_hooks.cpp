@@ -3,6 +3,8 @@
 //
 
 #include "app_library_loader_hooks.h"
+#include "startup_helper.h"
+#include "app_scheduler/app_task_executor.h"
 
 #include "base/logging.h"
 #include "base/task/thread_pool/thread_pool.h"
@@ -10,30 +12,32 @@
 
 namespace app {
 
-bool AppLibraryLoaded(JNIEnv* env, jclass clazz,
-                      base::android::LibraryProcessType library_process_type) {
-    base::trace_event::TraceLog::GetInstance()->set_process_name("hello-chromium-libs");
+bool AppLibraryLoaded(JNIEnv *env, jclass clazz, base::android::LibraryProcessType library_process_type) {
+  base::trace_event::TraceLog::GetInstance()->set_process_name("hello-chromium-libs");
 
-    // Can only use event tracing after setting up the command line.
-    TRACE_EVENT0("jni", "JNI_OnLoad continuation");
-
-
-    logging::LoggingSettings settings;
-    settings.logging_dest =
-            logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
-    logging::InitLogging(settings);
-    // To view log output with IDs and timestamps use "adb logcat -v threadtime"
-    logging::SetLogItems(true,    // Process ID
-                         true,    // Thread ID
-                         true,    // Timestamp
-                         false);   // Tick count
-    VLOG(0) << "AppLibraryLoaded: log level = " << logging::GetMinLogLevel()
-            << ", default verbosity = " << logging::GetVlogVerbosity();
+  // Can only use event tracing after setting up the command line.
+  TRACE_EVENT0("jni", "JNI_OnLoad continuation");
 
 
-    base::ThreadPoolInstance::CreateAndStartWithDefaultParams("hello_chromium_libs");
+  logging::LoggingSettings settings;
+  settings.logging_dest =
+      logging::LOG_TO_SYSTEM_DEBUG_LOG | logging::LOG_TO_STDERR;
+  logging::InitLogging(settings);
+  // To view log output with IDs and timestamps use "adb logcat -v threadtime"
+  logging::SetLogItems(true,    // Process ID
+                       true,    // Thread ID
+                       true,    // Timestamp
+                       false);  // Tick count
+  VLOG(0) << "AppLibraryLoaded: log level = " << logging::GetMinLogLevel()
+          << ", default verbosity = " << logging::GetVlogVerbosity();
 
-    return true;
+
+  AppTaskExecutor::Create();
+  AppTaskExecutor::EnableAllQueues();
+
+  CreateAndStartThreadPool("app-wise-thread-pool");
+
+  return true;
 }
 
 }
