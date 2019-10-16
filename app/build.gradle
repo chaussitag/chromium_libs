@@ -13,7 +13,7 @@ android {
             cmake {
                 arguments "-DANDROID_TOOLCHAIN=clang",
                           //"-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON",
-                          //"-DANDROID_PLATFORM=android-21",
+                          //"-DANDROID_PLATFORM=android-21", // When using the Android Gradle Plugin, this value is automatically set to match the application's minSdkVersion and should not be set manually.
                           "-DANDROID_ARM_MODE=arm",  // ANDROID_ARM_MODE is only valid for armeabi-v7a
                           "-DANDROID_ARM_NEON=TRUE", // ANDROID_ARM_NEON is only valid for armeabi-v7a
                           "-DANDROID_STL=c++_shared"
@@ -24,7 +24,7 @@ android {
         ndk {
             // Specifies the ABI configurations of your native
             // libraries Gradle should build and package with your APK.
-            abiFilters 'arm64-v8a', "armeabi-v7a"
+            abiFilters 'arm64-v8a' //, "armeabi-v7a"
         }
     }
 

@@ -85,9 +85,9 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          -fcomplete-member-pointers
                          -ffunction-sections
                          -fno-short-enums
-                         --target=aarch64-linux-android
-                         -isystem../../third_party/android_ndk/sysroot/usr/include/aarch64-linux-android
-                         -D__ANDROID_API__=21
+                         #--target=aarch64-linux-android
+                         #-isystem../../third_party/android_ndk/sysroot/usr/include/aarch64-linux-android
+                         #-D__ANDROID_API__=21
                          -mno-outline
                          -Wno-builtin-macro-redefined
                          -D__DATE__=
