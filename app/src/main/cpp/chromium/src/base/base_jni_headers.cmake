@@ -9,6 +9,12 @@ add_custom_command(OUTPUT ${BASE_JNI_HEADER_OUTPUT_DIR}
                    COMMENT "create the jni headers output directory: ${BASE_JNI_HEADER_OUTPUT_DIR}"
 )
 
+# add --use_proxy_hash to jni_generator.py for release build
+set(CHROMIUM_JNI_GENERATOR_USE_PROXY "")
+if(NOT "${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "release")
+    set(CHROMIUM_JNI_GENERATOR_USE_PROXY "--use_proxy_hash")
+endif()
+
 list(APPEND BASE_JAVA_NAMES
             AnimationFrameTimeHistogram
             ApkAssets
@@ -43,7 +49,7 @@ list(APPEND BASE_JAVA_NAMES
 foreach(JAVA_NAME ${BASE_JAVA_NAMES})
     add_custom_command(
             OUTPUT ${BASE_JNI_HEADER_OUTPUT_DIR}/${JAVA_NAME}_jni.h
-            COMMAND ${CHROMIUM_JNI_GENERATOR}
+            COMMAND ${CHROMIUM_JNI_GENERATOR} ${CHROMIUM_JNI_GENERATOR_USE_PROXY}
                     --ptr_type=long
                     --includes base/android/jni_generator/jni_generator_helper.h
                     --input_file ${BASE_JAVA_SRC_DIR}/${JAVA_NAME}.java
@@ -63,7 +69,7 @@ list(APPEND BASE_LIBRARYLOADER_JAVA_NAMES
 foreach(JAVA_NAME ${BASE_LIBRARYLOADER_JAVA_NAMES})
     add_custom_command(
             OUTPUT ${BASE_JNI_HEADER_OUTPUT_DIR}/${JAVA_NAME}_jni.h
-            COMMAND ${CHROMIUM_JNI_GENERATOR}
+            COMMAND ${CHROMIUM_JNI_GENERATOR} ${CHROMIUM_JNI_GENERATOR_USE_PROXY}
                     --ptr_type=long
                     --includes base/android/jni_generator/jni_generator_helper.h
                     --input_file ${BASE_JAVA_SRC_DIR}/library_loader/${JAVA_NAME}.java
@@ -84,7 +90,7 @@ list(APPEND BASE_METRICS_JAVA_NAMES
 foreach(JAVA_NAME ${BASE_METRICS_JAVA_NAMES})
     add_custom_command(
             OUTPUT ${BASE_JNI_HEADER_OUTPUT_DIR}/${JAVA_NAME}_jni.h
-            COMMAND ${CHROMIUM_JNI_GENERATOR}
+            COMMAND ${CHROMIUM_JNI_GENERATOR} ${CHROMIUM_JNI_GENERATOR_USE_PROXY}
                     --ptr_type=long
                     --includes base/android/jni_generator/jni_generator_helper.h
                     --input_file ${BASE_JAVA_SRC_DIR}/metrics/${JAVA_NAME}.java
@@ -103,7 +109,7 @@ list(APPEND BASE_PROCESS_LAUNCHER_JAVA_NAMES
 foreach(JAVA_NAME ${BASE_PROCESS_LAUNCHER_JAVA_NAMES})
     add_custom_command(
             OUTPUT ${BASE_JNI_HEADER_OUTPUT_DIR}/${JAVA_NAME}_jni.h
-            COMMAND ${CHROMIUM_JNI_GENERATOR}
+            COMMAND ${CHROMIUM_JNI_GENERATOR} ${CHROMIUM_JNI_GENERATOR_USE_PROXY}
                     --ptr_type=long
                     --includes base/android/jni_generator/jni_generator_helper.h
                     --input_file ${BASE_JAVA_SRC_DIR}/process_launcher/${JAVA_NAME}.java
@@ -123,7 +129,7 @@ list(APPEND BASE_TASK_JAVA_NAMES
 foreach(JAVA_NAME ${BASE_TASK_JAVA_NAMES})
     add_custom_command(
             OUTPUT ${BASE_JNI_HEADER_OUTPUT_DIR}/${JAVA_NAME}_jni.h
-            COMMAND ${CHROMIUM_JNI_GENERATOR}
+            COMMAND ${CHROMIUM_JNI_GENERATOR} ${CHROMIUM_JNI_GENERATOR_USE_PROXY}
                     --ptr_type=long
                     --includes base/android/jni_generator/jni_generator_helper.h
                     --input_file ${BASE_JAVA_SRC_DIR}/task/${JAVA_NAME}.java

@@ -11,9 +11,12 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                arguments "-DCMAKE_BUILD_TYPE=Debug", "-DANDROID_TOOLCHAIN=clang",
-                          "-DANDROID_STL=c++_shared", "-DANDROID_PLATFORM=android-21",
-                          "-DANDROID_ARM_MODE=arm", "-DANDROID_ARM_NEON=TRUE"
+                arguments "-DANDROID_TOOLCHAIN=clang",
+                          //"-DCMAKE_VERBOSE_MAKEFILE:BOOL=ON",
+                          "-DANDROID_STL=c++_shared",
+                          "-DANDROID_PLATFORM=android-21",
+                          "-DANDROID_ARM_MODE=arm",
+                          "-DANDROID_ARM_NEON=TRUE"
             }
         }
 

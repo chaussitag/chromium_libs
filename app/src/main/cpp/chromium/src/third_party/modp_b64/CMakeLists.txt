@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.6)
 project(modp_b64)
+
+string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
+
 if(CMAKE_SYSTEM_NAME MATCHES "Android")
   set(LIB_NAME modp_b64)
   set(MODP_B64_SRC modp_b64.cc modp_b64.h modp_b64_data.h)
@@ -59,9 +62,18 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          -Wtautological-overlap-compare
                         >)
 
+  # flags for debug build
+  if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
+    target_compile_options(${LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
+                           -Wno-undefined-bool-conversion
+                           -Wno-tautological-undefined-compare
+                           >)
+    target_compile_definitions(${LIB_NAME} PRIVATE _DEBUG)
+  else()
+    target_compile_definitions(${LIB_NAME} PRIVATE NDEBUG)
+  endif()
+
   target_compile_options(${LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
-                         -Wno-undefined-bool-conversion
-                         -Wno-tautological-undefined-compare
                          -std=c++14
                          -fno-exceptions
                          -fno-rtti

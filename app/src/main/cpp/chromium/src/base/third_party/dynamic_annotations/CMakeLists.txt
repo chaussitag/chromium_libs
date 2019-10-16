@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.6)
 project(dynamic_annotations)
+
+string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
+
 if(CMAKE_SYSTEM_NAME MATCHES "Android")
   set(LIB_NAME dynamic_annotations)
   set(DYNAMIC_ANNOTATIONS_SRC ../valgrind/valgrind.h dynamic_annotations.c dynamic_annotations.h)
@@ -42,7 +45,6 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          -Wno-unneeded-internal-declaration
                          -Wno-undefined-var-template
                          -Wno-ignored-pragma-optimize
-                         -Oz
                          -fno-ident
                          -fdata-sections
                          -ffunction-sections
@@ -59,15 +61,29 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          -Wtautological-overlap-compare
                          >)
 
+  if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
+    # build flags for debug
+    target_compile_options(${LIB_NAME} PRIVATE PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
+            -Oz
+            >)
+  else()
+    # build flags for release
+    target_compile_options(${LIB_NAME} PRIVATE PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
+            -O2
+            >)
+  endif()
+
   target_compile_options(${LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:C>:
                          -std=c11
                          #--sysroot=../../third_party/android_ndk/sysroot
                          >)
-  string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
-  if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "release")
+
+  if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
     target_compile_definitions(${LIB_NAME} PUBLIC DYNAMIC_ANNOTATIONS_ENABLED=1)
+    target_compile_definitions(${LIB_NAME} PRIVATE _DEBUG)
   else()
     target_compile_definitions(${LIB_NAME} PUBLIC DYNAMIC_ANNOTATIONS_ENABLED=0)
+    target_compile_definitions(${LIB_NAME} PRIVATE NDEBUG)
   endif()
 
 endif()

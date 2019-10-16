@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.6.0)
+project(chromium-libs)
+
+string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
 
 set(LIB_NAME hello-chromium-base)
 
@@ -36,5 +39,33 @@ target_include_directories(${LIB_NAME} PRIVATE ./ chromium/src ${APP_JNI_HEADER_
 
 find_library(log-lib log)
 target_link_libraries(${LIB_NAME} ${log-lib} chromium_base)
+
+set_target_properties(${LIB_NAME} PROPERTIES LINK_FLAGS
+"-Wl,--fatal-warnings \
+-fPIC \
+-Wl,-z,noexecstack \
+-Wl,-z,relro \
+-Wl,-z,defs \
+-Wl,--as-needed \
+-fuse-ld=lld \
+-Wl,-z,max-page-size=4096 \
+-Wl,--color-diagnostics \
+-Wl,--no-rosegment \
+-Wl,--exclude-libs=libgcc.a \
+-Wl,--exclude-libs=libvpx_assembly_arm.a \
+-Wl,-mllvm,-enable-machine-outliner=never \
+-Wl,--gdb-index \
+-Wl,--warn-shared-textrel \
+-Werror"
+)
+
+# linker flags for release build only
+if(NOT "${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
+  set_target_properties(${LIB_NAME} PROPERTIES LINK_FLAGS
+"-Wl,--warn-shared-textrel \
+-Wl,-O2"
+#-Wl,--gc-sections"
+)
+endif()
 
 add_subdirectory(chromium)

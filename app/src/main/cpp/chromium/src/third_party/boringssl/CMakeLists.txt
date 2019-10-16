@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.6)
 project(boringssl)
+
+string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
+
 if(CMAKE_SYSTEM_NAME MATCHES "Android")
   set(LIB_NAME boringssl)
   enable_language(ASM)
@@ -23,6 +26,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
   add_library(${LIB_NAME} SHARED ${BORING_SSL_SRC})
 
   target_include_directories(${LIB_NAME} PUBLIC src/include)
+
   target_compile_definitions(${LIB_NAME} PUBLIC BORINGSSL_SHARED_LIBRARY)
   target_compile_definitions(${LIB_NAME} PRIVATE
                              BORINGSSL_ALLOW_CXX_RUNTIME
@@ -31,6 +35,13 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                              OPENSSL_SMALL
                              _XOPEN_SOURCE=700
                             )
+  # build flags for debug build only
+  if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
+    target_compile_definitions(${LIB_NAME} PRIVATE _DEBUG)
+  else()
+    target_compile_definitions(${LIB_NAME} PRIVATE NDEBUG)
+  endif()
+
   target_compile_options(${LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
                          -fno-strict-aliasing
                          --param=ssp-buffer-size=4
@@ -108,9 +119,16 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                         >)
 
   target_compile_options(${LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:C>:-std=c11 -std=c99>)
+
+  # build flags for debug build only
+  if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
+    target_compile_options(${LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
+                           -Wno-undefined-bool-conversion
+                           -Wno-tautological-undefined-compare
+                          >)
+  endif()
+
   target_compile_options(${LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
-                         -Wno-undefined-bool-conversion
-                         -Wno-tautological-undefined-compare
                          -std=c++14
                          -fno-exceptions
                          -fno-rtti
@@ -143,5 +161,14 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
  #--target=aarch64-linux-android \
  #-nostdlib \
 )
+
+  # linker flags for release build only
+  if(NOT "${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
+    set_target_properties(${LIB_NAME} PROPERTIES LINK_FLAGS
+"-Wl,--warn-shared-textrel \
+-Wl,-O2"
+#-Wl,--gc-sections"
+)
+  endif()
 
 endif()

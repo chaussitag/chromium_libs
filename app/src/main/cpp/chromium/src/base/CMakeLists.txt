@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.6.0)
 project(base)
+
+string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
+
 if(CMAKE_SYSTEM_NAME MATCHES "Android")
   set(CHROMIUM_BASE_LIB_NAME chromium_base)
 
@@ -42,11 +45,11 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
       )
   # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   add_library(${CHROMIUM_BASE_LIB_NAME} SHARED
-          ${BASE_SRC}
-          ${BASE_STATIC_SRC}
-          ${ASHMEM_SRC}
-          ${BASE_NUMERIC_SRC}
-          ${GENERATED_CHROMIUM_JNI_HEADERS})
+              ${BASE_SRC}
+              ${BASE_STATIC_SRC}
+              ${ASHMEM_SRC}
+              ${BASE_NUMERIC_SRC}
+              ${GENERATED_CHROMIUM_JNI_HEADERS})
 
   target_include_directories(${CHROMIUM_BASE_LIB_NAME} PUBLIC
                              ..
@@ -59,7 +62,15 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                              ${ANDROID_NDK}/sources/android/cpufeatures
                             )
   target_compile_definitions(${CHROMIUM_BASE_LIB_NAME} PUBLIC COMPONENT_BUILD BASE_IMPLEMENTATION)
+  # flags for debug build
+  if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
+    target_compile_definitions(${CHROMIUM_BASE_LIB_NAME} PUBLIC _DEBUG)
+  else()
+    target_compile_definitions(${CHROMIUM_BASE_LIB_NAME} PUBLIC NDEBUG)
+  endif()
+
   target_compile_definitions(${CHROMIUM_BASE_LIB_NAME} PRIVATE NO_TCMALLOC)
+
   target_compile_options(${CHROMIUM_BASE_LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
                          -fno-strict-aliasing
                          --param=ssp-buffer-size=4
@@ -97,7 +108,6 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          -Wno-unneeded-internal-declaration
                          -Wno-undefined-var-template
                          -Wno-ignored-pragma-optimize
-                         -Oz
                          -fno-ident
                          -fdata-sections
                          -ffunction-sections
@@ -119,10 +129,28 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          -Wexit-time-destructors
                         >)
 
+  if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
+    # build flags for debug build only
+    target_compile_options(${LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
+                           -Oz
+                          >)
+  else()
+    # build flags for release build only
+    target_compile_options(${LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
+                           -O2
+                          >)
+  endif()
+
   target_compile_options(${CHROMIUM_BASE_LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:C>:-std=c11>)
+
+  if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
+    target_compile_options(${LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
+                           -Wno-undefined-bool-conversion
+                           -Wno-tautological-undefined-compare
+                          >)
+  endif()
+
   target_compile_options(${CHROMIUM_BASE_LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
-                         -Wno-undefined-bool-conversion
-                         -Wno-tautological-undefined-compare
                          -std=c++14
                          -fno-exceptions
                          -fno-rtti
@@ -163,6 +191,15 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
 #-nostdlib \
 #--sysroot=../../third_party/android_ndk/platforms/android-21/arch-arm64 \
 )
+
+  # linker flags for release build only
+  if(NOT "${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
+    set_target_properties(${LIB_NAME} PROPERTIES LINK_FLAGS
+"-Wl,--warn-shared-textrel \
+-Wl,-O2"
+#-Wl,--gc-sections"
+)
+  endif()
 
   find_library(log log)
   find_library(dl dl)

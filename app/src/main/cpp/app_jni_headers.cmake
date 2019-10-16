@@ -13,6 +13,12 @@ add_custom_command(OUTPUT ${APP_JNI_HEADER_OUTPUT_DIR}
                    COMMENT "create the app jni headers output directory: ${APP_JNI_HEADER_OUTPUT_DIR}"
 )
 
+# add --use_proxy_hash to jni_generator.py for release build
+set(_JNI_GENERATOR_USE_PROXY_ "")
+if(NOT "${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "release")
+  set(_JNI_GENERATOR_USE_PROXY_ "--use_proxy_hash")
+endif()
+
 list(APPEND APP_JAVA_NAMES
             MainActivity
             TraceToFile
@@ -20,7 +26,7 @@ list(APPEND APP_JAVA_NAMES
 foreach(JAVA_NAME ${APP_JAVA_NAMES})
     add_custom_command(
             OUTPUT ${APP_JNI_HEADER_OUTPUT_DIR}/${JAVA_NAME}_jni.h
-            COMMAND ${JNI_GENERATOR}
+            COMMAND ${JNI_GENERATOR} ${_JNI_GENERATOR_USE_PROXY_}
             --ptr_type=long
             --includes base/android/jni_generator/jni_generator_helper.h
             --input_file ${APP_JAVA_SRC_DIR}/${JAVA_NAME}.java

@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.6)
 project(libevent)
+
+string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
+
 if(CMAKE_SYSTEM_NAME MATCHES "Android")
   set(LIB_NAME event)
   set(LIBEVENT_SRC
@@ -36,6 +39,14 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
   add_library(${LIB_NAME} STATIC ${LIBEVENT_SRC})
   target_include_directories(${LIB_NAME} PRIVATE ../../.. android)
   target_compile_definitions(${LIB_NAME} PRIVATE HAVE_CONFIG_H)
+
+  # flags for debug build
+  if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
+    target_compile_definitions(${LIB_NAME} PRIVATE _DEBUG)
+  else()
+    target_compile_definitions(${LIB_NAME} PRIVATE NDEBUG)
+  endif()
+
   target_compile_options(${LIB_NAME} PRIVATE PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
                          -fno-strict-aliasing
                          --param=ssp-buffer-size=4
@@ -51,7 +62,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          -ffunction-sections
                          -fno-short-enums
                          --target=aarch64-linux-android
-                         -isystem../../third_party/android_ndk/sysroot/usr/include/aarch64-linux-android
+                         #-isystem../../third_party/android_ndk/sysroot/usr/include/aarch64-linux-android
                          -D__ANDROID_API__=21
                          -mno-outline
                          -Wno-builtin-macro-redefined
