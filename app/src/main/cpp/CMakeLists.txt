@@ -40,7 +40,8 @@ target_include_directories(${LIB_NAME} PRIVATE ./ chromium/src ${APP_JNI_HEADER_
 find_library(log-lib log)
 target_link_libraries(${LIB_NAME} ${log-lib} chromium_base)
 
-set_target_properties(${LIB_NAME} PROPERTIES LINK_FLAGS
+# linker flags
+set_property(TARGET ${LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
 "-Wl,--fatal-warnings \
 -fPIC \
 -Wl,-z,noexecstack \
@@ -48,20 +49,40 @@ set_target_properties(${LIB_NAME} PROPERTIES LINK_FLAGS
 -Wl,-z,defs \
 -Wl,--as-needed \
 -fuse-ld=lld \
--Wl,-z,max-page-size=4096 \
 -Wl,--color-diagnostics \
 -Wl,--no-rosegment \
 -Wl,--exclude-libs=libgcc.a \
 -Wl,--exclude-libs=libvpx_assembly_arm.a \
--Wl,-mllvm,-enable-machine-outliner=never \
+-Werror \
 -Wl,--gdb-index \
 -Wl,--warn-shared-textrel \
--Werror"
+-Wl,-wrap,calloc \
+-Wl,-wrap,free \
+-Wl,-wrap,malloc \
+-Wl,-wrap,memalign \
+-Wl,-wrap,posix_memalign \
+-Wl,-wrap,pvalloc \
+-Wl,-wrap,realloc \
+-Wl,-wrap,valloc"
+#--gcc-toolchain=../../third_party/android_ndk/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64 \
+#-Wl,-z,max-page-size=4096 \
+#-Wl,-mllvm,-enable-machine-outliner=never \
+#--target=aarch64-linux-android \
+#-nostdlib \
+#--sysroot=../../third_party/android_ndk/platforms/android-21/arch-arm64 \
 )
+
+if("${ANDROID_ABI}" STREQUAL "arm64-v8a")
+  # linker flags for arm64-v8a only
+  set_property(TARGET ${LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
+"-Wl,-z,max-page-size=4096 \
+-Wl,-mllvm,-enable-machine-outliner=never"
+)
+endif()
 
 # linker flags for release build only
 if(NOT "${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
-  set_target_properties(${LIB_NAME} PROPERTIES LINK_FLAGS
+  set_property(TARGET ${LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
 "-Wl,--warn-shared-textrel \
 -Wl,-O2"
 #-Wl,--gc-sections"

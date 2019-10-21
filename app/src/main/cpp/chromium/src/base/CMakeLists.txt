@@ -11,10 +11,12 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
 
   set(BASE_STATIC_SRC
       base_switches.cc
-      base_switches.h)
+      base_switches.h
+     )
   set(ASHMEM_SRC
       ../third_party/ashmem/ashmem-dev.c
-      ../third_party/ashmem/ashmem.h)
+      ../third_party/ashmem/ashmem.h
+     )
   set(BASE_NUMERICS_SRC
       numerics/checked_math_impl.h
       numerics/clamped_math_impl.h
@@ -28,10 +30,47 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
       numerics/math_constants.h
       numerics/ranges.h
       numerics/safe_conversions.h
-      numerics/safe_math.h)
+      numerics/safe_math.h
+     )
 
-  # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  set(BASE_JNI_HEADER_OUTPUT_DIR ${CMAKE_BINARY_DIR}/chromium_jni_header_gen/base/base_jni_headers/base/jni)
+  # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>><<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  set(CAN_UNWIND_WITH_FRAME_POINTERS 0)
+  if("${ANDROID_ABI}" STREQUAL "arm64-v8a")
+    set(CAN_UNWIND_WITH_FRAME_POINTERS 1)
+  endif()
+
+  set(ENABLE_GDBINIT_WARNING 0)
+  # for release build only
+  if(NOT "${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
+    set(ENABLE_GDBINIT_WARNING 1)
+  endif()
+
+  set(CHROMIUM_HEADER_GEN_DIR ${CMAKE_BINARY_DIR}/chromium_header_gen)
+
+  set(BASE_BUILDFLAGS_GEN_DIR ${CHROMIUM_HEADER_GEN_DIR}/buildflags_header_gen)
+  configure_file(../chromium_header_gen/buildflags_template/base/debug/debugging_buildflags.h.in
+                 ${BASE_BUILDFLAGS_GEN_DIR}/base/debug/debugging_buildflags.h
+                )
+
+  set(BASE_GENERATED_BUILDFLAGS
+      ${BASE_BUILDFLAGS_GEN_DIR}/base/debug/debugging_buildflags.h
+      ../chromium_header_gen/buildflags_header_gen/base/cfi_buildflags.h
+      ../chromium_header_gen/buildflags_header_gen/base/clang_coverage_buildflags.h
+      ../chromium_header_gen/buildflags_header_gen/base/memory/protected_memory_buildflags.h
+      ../chromium_header_gen/buildflags_header_gen/base/sanitizer_buildflags.h
+      ../chromium_header_gen/buildflags_header_gen/base/android/orderfile/orderfile_buildflags.h
+      ../chromium_header_gen/buildflags_header_gen/base/android/library_loader/anchor_functions_buildflags.h
+      ../chromium_header_gen/buildflags_header_gen/base/partition_alloc_buildflags.h
+      ../chromium_header_gen/buildflags_header_gen/base/allocator/buildflags.h
+      ../chromium_header_gen/buildflags_header_gen/base/generated_build_date.h
+      ../chromium_header_gen/buildflags_header_gen/base/logging_buildflags.h
+      ../chromium_header_gen/buildflags_header_gen/base/synchronization/synchronization_buildflags.h
+     )
+  # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  # >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  set(BASE_JNI_HEADER_OUTPUT_DIR
+      ${CHROMIUM_HEADER_GEN_DIR}/jni_header_gen/base/base_jni_headers/base/jni)
   message(STATUS "BASE_JNI_HEADER_OUTPUT_DIR: ${BASE_JNI_HEADER_OUTPUT_DIR}")
 
   # generate jni headers for java file under base/android/java,
@@ -40,25 +79,29 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
 
   list(APPEND GENERATED_CHROMIUM_JNI_HEADERS
        ${GENERATED_BASE_JNI_HEADERS}
-       ../gen/base/android_runtime_jni_headers/base/jni/Runnable_jni.h
-       ../gen/base/android_runtime_jni_headers/base/jni/Runtime_jni.h
+       ../chromium_header_gen/jni_header_gen/base/android_runtime_jni_headers/base/jni/Runnable_jni.h
+       ../chromium_header_gen/jni_header_gen/base/android_runtime_jni_headers/base/jni/Runtime_jni.h
       )
-  # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+  # <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   add_library(${CHROMIUM_BASE_LIB_NAME} SHARED
               ${BASE_SRC}
               ${BASE_STATIC_SRC}
               ${ASHMEM_SRC}
               ${BASE_NUMERIC_SRC}
-              ${GENERATED_CHROMIUM_JNI_HEADERS})
+              ${BASE_GENERATED_BUILDFLAGS}
+              ${GENERATED_CHROMIUM_JNI_HEADERS}
+             )
 
   target_include_directories(${CHROMIUM_BASE_LIB_NAME} PUBLIC
                              ..
-                             ../gen
-                             ../gen/base/base_jni_headers
-                             ../gen/base/base_jni_headers/base
-                             ../gen/base/android_runtime_jni_headers
-                             ../gen/base/android_runtime_jni_headers/base
+                             ../chromium_header_gen/jni_header_gen/base/android_runtime_jni_headers/base
+                             ../chromium_header_gen/buildflags_header_gen
+                             ../chromium_header_gen/buildflags_header_gen/base/base_jni_headers
+                             ../chromium_header_gen/buildflags_header_gen/base/base_jni_headers/base
+                             ../chromium_header_gen/buildflags_header_gen/base/android_runtime_jni_headers
+                             ../chromium_header_gen/buildflags_header_gen/base/android_runtime_jni_headers/base
                              ${BASE_JNI_HEADER_OUTPUT_DIR}/..
+                             ${BASE_BUILDFLAGS_GEN_DIR}
                              ${ANDROID_NDK}/sources/android/cpufeatures
                             )
   target_compile_definitions(${CHROMIUM_BASE_LIB_NAME} PUBLIC COMPONENT_BUILD BASE_IMPLEMENTATION)
@@ -88,7 +131,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          #--target=aarch64-linux-android
                          #-isystem../../third_party/android_ndk/sysroot/usr/include/aarch64-linux-android
                          #-D__ANDROID_API__=21
-                         -mno-outline
+                         #-mno-outline
                          -Wno-builtin-macro-redefined
                          -D__DATE__=
                          -D__TIME__=
@@ -127,18 +170,36 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          -Wexit-time-destructors
                          -Wshadow
                          -Wexit-time-destructors
-                        >)
+                       >)
+
+  if("${ANDROID_ABI}" STREQUAL "arm64-v8a")
+    target_compile_options(${CHROMIUM_BASE_LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
+                           -mno-outline
+                           -fno-omit-frame-pointer
+                         >)
+  elseif("${ANDROID_ABI}" STREQUAL "armeabi-v7a")
+    target_compile_options(${CHROMIUM_BASE_LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
+                           -DHAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC=1
+                           -march=armv7-a
+                           -mfloat-abi=softfp
+                           -mtune=generic-armv7-a
+                           -mfpu=neon
+                           -mthumb
+                           -fomit-frame-pointer
+                           -gdwarf-3
+                         >)
+  endif()
 
   if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
     # build flags for debug build only
     target_compile_options(${LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
                            -Oz
-                          >)
+                         >)
   else()
     # build flags for release build only
     target_compile_options(${LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
                            -O2
-                          >)
+                         >)
   endif()
 
   target_compile_options(${CHROMIUM_BASE_LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:C>:-std=c11>)
@@ -147,7 +208,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
     target_compile_options(${LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
                            -Wno-undefined-bool-conversion
                            -Wno-tautological-undefined-compare
-                          >)
+                         >)
   endif()
 
   target_compile_options(${CHROMIUM_BASE_LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
@@ -160,8 +221,10 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          #--sysroot=../../third_party/android_ndk/sysroot
                          #-isystem../../third_party/android_ndk/sources/android/support/include
                          -fvisibility-inlines-hidden
-                        >)
-  set_target_properties(${CHROMIUM_BASE_LIB_NAME} PROPERTIES LINK_FLAGS
+                       >)
+
+  # linker flags
+  set_property(TARGET ${CHROMIUM_BASE_LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
 "-Wl,--fatal-warnings \
 -fPIC \
 -Wl,-z,noexecstack \
@@ -169,12 +232,10 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
 -Wl,-z,defs \
 -Wl,--as-needed \
 -fuse-ld=lld \
--Wl,-z,max-page-size=4096 \
 -Wl,--color-diagnostics \
 -Wl,--no-rosegment \
 -Wl,--exclude-libs=libgcc.a \
 -Wl,--exclude-libs=libvpx_assembly_arm.a \
--Wl,-mllvm,-enable-machine-outliner=never \
 -Werror \
 -Wl,--gdb-index \
 -Wl,--warn-shared-textrel \
@@ -187,14 +248,25 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
 -Wl,-wrap,realloc \
 -Wl,-wrap,valloc"
 #--gcc-toolchain=../../third_party/android_ndk/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64 \
+#-Wl,-z,max-page-size=4096 \
+#-Wl,-mllvm,-enable-machine-outliner=never \
 #--target=aarch64-linux-android \
 #-nostdlib \
 #--sysroot=../../third_party/android_ndk/platforms/android-21/arch-arm64 \
 )
 
+  if("${ANDROID_ABI}" STREQUAL "arm64-v8a")
+    # linker flags for arm64-v8a only
+    set_property(TARGET ${CHROMIUM_BASE_LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
+"-Wl,-z,max-page-size=4096 \
+-Wl,-mllvm,-enable-machine-outliner=never"
+)
+  endif()
+
+
   # linker flags for release build only
   if(NOT "${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
-    set_target_properties(${LIB_NAME} PROPERTIES LINK_FLAGS
+    set_property(TARGET ${CHROMIUM_BASE_LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
 "-Wl,--warn-shared-textrel \
 -Wl,-O2"
 #-Wl,--gc-sections"
@@ -213,7 +285,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                         modp_b64
                         boringssl
                         cpufeatures
-                        ${android} ${log} ${dl})
+                        ${android} ${log} ${dl}
+                       )
 
   add_subdirectory(third_party/dynamic_annotations)
   add_subdirectory(third_party/libevent)
@@ -222,5 +295,6 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
 
   # build cpufeatures as a static lib
   add_library(cpufeatures STATIC
-              ${ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c)
+              ${ANDROID_NDK}/sources/android/cpufeatures/cpu-features.c
+             )
 endif()

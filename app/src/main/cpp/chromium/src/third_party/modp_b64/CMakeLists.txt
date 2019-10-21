@@ -25,7 +25,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          #--target=aarch64-linux-android
                          #-isystem../../third_party/android_ndk/sysroot/usr/include/aarch64-linux-android
                          #-D__ANDROID_API__=21
-                         -mno-outline
+                         #-mno-outline
                          -Wno-builtin-macro-redefined
                          -D__DATE__=
                          -D__TIME__=
@@ -49,7 +49,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          -fno-ident
                          -fdata-sections
                          -ffunction-sections
-                         -fno-omit-frame-pointer
+                         #-fno-omit-frame-pointer
                          -g2
                          -ggnu-pubnames
                          -fvisibility=hidden
@@ -60,14 +60,32 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          -Wheader-hygiene
                          -Wstring-conversion
                          -Wtautological-overlap-compare
-                        >)
+                       >)
+
+  if("${ANDROID_ABI}" STREQUAL "arm64-v8a")
+    target_compile_options(${LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
+                           -mno-outline
+                           -fno-omit-frame-pointer
+                         >)
+  elseif("${ANDROID_ABI}" STREQUAL "armeabi-v7a")
+    target_compile_options(${LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
+                           -DHAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC=1
+                           -march=armv7-a
+                           -mfloat-abi=softfp
+                           -mtune=generic-armv7-a
+                           -mfpu=neon
+                           -mthumb
+                           -fomit-frame-pointer
+                           -gdwarf-3
+                         >)
+  endif()
 
   # flags for debug build
   if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
     target_compile_options(${LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
                            -Wno-undefined-bool-conversion
                            -Wno-tautological-undefined-compare
-                           >)
+                          >)
     target_compile_definitions(${LIB_NAME} PRIVATE _DEBUG)
   else()
     target_compile_definitions(${LIB_NAME} PRIVATE NDEBUG)
@@ -83,5 +101,5 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          #--sysroot=../../third_party/android_ndk/sysroot
                          #-isystem../../third_party/android_ndk/sources/android/support/include
                          -fvisibility-inlines-hidden
-                        >)
+                       >)
 endif()

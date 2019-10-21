@@ -872,7 +872,7 @@ set(BASE_SRC
     process/process_iterator_linux.cc
     process/process_metrics_linux.cc
     system/sys_info_linux.cc
-    android/reached_code_profiler_stub.cc
+    #android/reached_code_profiler_stub.cc
     hash/md5.h
     hash/md5_constexpr.h
     hash/md5_constexpr_internal.h
@@ -913,3 +913,9 @@ set(BASE_SRC
     posix/can_lower_nice_to.h
     time/time_android.cc
   )
+
+  if("${ANDROID_ABI}" STREQUAL "arm64-v8a")
+    set(BASE_SRC ${BASE_SRC} android/reached_code_profiler_stub.cc)
+  elseif("${ANDROID_ABI}" STREQUAL "armeabi-v7a")
+    set(BASE_SRC ${BASE_SRC} android/reached_code_profiler.cc)
+  endif()
