@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.6)
+cmake_minimum_required(VERSION 3.6.0)
 project(boringssl)
 
 string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
@@ -144,7 +144,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                          #-Xclang -mllvm
                          #-Xclang -instcombine-lower-dbg-declare=0
                          -fcomplete-member-pointers
-                         -std=c11
+                         #-std=c11  # 20200509, comment out this to stop android studio complaining about "error: invalid argument '-std=c11' not allowed with 'C++'"
                          -ffunction-sections
                          -fno-short-enums
                          #--target=aarch64-linux-android
@@ -192,7 +192,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                        >)
 
   set_property(TARGET ${LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
-"-Wl,--fatal-warnings \
+" -Wl,--fatal-warnings \
 -fPIC \
 -Wl,-z,noexecstack \
 -Wl,-z,relro \
@@ -205,7 +205,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
 -Wl,--exclude-libs=libvpx_assembly_arm.a \
 -Wl,--gdb-index \
 -Wl,--warn-shared-textrel \
--Werror"
+-Werror "
  #-Wl,-z,max-page-size=4096 \
  #-Wl,-mllvm,-enable-machine-outliner=never \
  #--gcc-toolchain=../../third_party/android_ndk/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64 \
@@ -217,17 +217,18 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
   if("${ANDROID_ABI}" STREQUAL "arm64-v8a")
     # linker flags for arm64-v8a only
     set_property(TARGET ${LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
-"-Wl,-z,max-page-size=4096 \
--Wl,-mllvm,-enable-machine-outliner=never"
+" -Wl,-z,max-page-size=4096 \
+-Wl,-mllvm,-enable-machine-outliner=never "
 )
   endif()
 
   # linker flags for release build only
   if(NOT "${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
     set_property(TARGET ${LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
-"-Wl,--warn-shared-textrel \
--Wl,-O2"
-#-Wl,--gc-sections"
+" -Wl,--icf=all \
+-Wl,--warn-shared-textrel \
+-Wl,-O2 \
+-Wl,--gc-sections "
 )
   endif()
 

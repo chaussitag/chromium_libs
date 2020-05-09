@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.6.0)
 project(chromium-libs)
 
+message(STATUS "CMAKE_VERBOSE_MAKEFILE: ${CMAKE_VERBOSE_MAKEFILE}")
+
 string(TOLOWER "${CMAKE_BUILD_TYPE}" CMAKE_BUILD_TYPE_LOWER)
 
 set(LIB_NAME hello-chromium-base)
@@ -42,7 +44,7 @@ target_link_libraries(${LIB_NAME} ${log-lib} chromium_base)
 
 # linker flags
 set_property(TARGET ${LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
-"-Wl,--fatal-warnings \
+" -Wl,--fatal-warnings \
 -fPIC \
 -Wl,-z,noexecstack \
 -Wl,-z,relro \
@@ -63,7 +65,7 @@ set_property(TARGET ${LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
 -Wl,-wrap,posix_memalign \
 -Wl,-wrap,pvalloc \
 -Wl,-wrap,realloc \
--Wl,-wrap,valloc"
+-Wl,-wrap,valloc "
 #--gcc-toolchain=../../third_party/android_ndk/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64 \
 #-Wl,-z,max-page-size=4096 \
 #-Wl,-mllvm,-enable-machine-outliner=never \
@@ -75,17 +77,18 @@ set_property(TARGET ${LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
 if("${ANDROID_ABI}" STREQUAL "arm64-v8a")
   # linker flags for arm64-v8a only
   set_property(TARGET ${LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
-"-Wl,-z,max-page-size=4096 \
--Wl,-mllvm,-enable-machine-outliner=never"
+" -Wl,-z,max-page-size=4096 \
+-Wl,-mllvm,-enable-machine-outliner=never "
 )
 endif()
 
 # linker flags for release build only
 if(NOT "${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
   set_property(TARGET ${LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
-"-Wl,--warn-shared-textrel \
--Wl,-O2"
-#-Wl,--gc-sections"
+" -Wl,--icf=all \
+-Wl,--warn-shared-textrel \
+-Wl,-O2 \
+-Wl,--gc-sections "
 )
 endif()
 

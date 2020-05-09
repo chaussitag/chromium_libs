@@ -13,9 +13,6 @@ the chromium code base comes from [release tag 76.0.3809.111 of the chromium pro
 
 
 # build
+debug and release build for arm64-v8a and armeabi-v7a are supported, the latest ndk-bundle(r21.0.6113669) was verified. 
 
-the latest ndk-bundle(r20.0.5594570, 20190924) was verified. 
-
-arm64-v8a debug and release build supported;
-armeabi-v7a debug build supported, release build support will come soon.
 

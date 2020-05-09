@@ -104,14 +104,18 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                              ${BASE_BUILDFLAGS_GEN_DIR}
                              ${ANDROID_NDK}/sources/android/cpufeatures
                             )
+  # public definitions
   target_compile_definitions(${CHROMIUM_BASE_LIB_NAME} PUBLIC COMPONENT_BUILD BASE_IMPLEMENTATION)
-  # flags for debug build
+
   if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
+    # public defitions for debug build
     target_compile_definitions(${CHROMIUM_BASE_LIB_NAME} PUBLIC _DEBUG)
   else()
+    # public defitions for release build
     target_compile_definitions(${CHROMIUM_BASE_LIB_NAME} PUBLIC NDEBUG)
   endif()
 
+  # do not use tc_malloc
   target_compile_definitions(${CHROMIUM_BASE_LIB_NAME} PRIVATE NO_TCMALLOC)
 
   target_compile_options(${CHROMIUM_BASE_LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
@@ -192,12 +196,12 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
 
   if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
     # build flags for debug build only
-    target_compile_options(${LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
+    target_compile_options(${CHROMIUM_BASE_LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
                            -Oz
                          >)
   else()
     # build flags for release build only
-    target_compile_options(${LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
+    target_compile_options(${CHROMIUM_BASE_LIB_NAME} PRIVATE $<$<OR:$<COMPILE_LANGUAGE:C>,$<COMPILE_LANGUAGE:CXX>>:
                            -O2
                          >)
   endif()
@@ -205,7 +209,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
   target_compile_options(${CHROMIUM_BASE_LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:C>:-std=c11>)
 
   if("${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
-    target_compile_options(${LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
+    target_compile_options(${CHROMIUM_BASE_LIB_NAME} PRIVATE $<$<COMPILE_LANGUAGE:CXX>:
                            -Wno-undefined-bool-conversion
                            -Wno-tautological-undefined-compare
                          >)
@@ -225,7 +229,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
 
   # linker flags
   set_property(TARGET ${CHROMIUM_BASE_LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
-"-Wl,--fatal-warnings \
+" -Wl,--fatal-warnings \
 -fPIC \
 -Wl,-z,noexecstack \
 -Wl,-z,relro \
@@ -246,7 +250,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
 -Wl,-wrap,posix_memalign \
 -Wl,-wrap,pvalloc \
 -Wl,-wrap,realloc \
--Wl,-wrap,valloc"
+-Wl,-wrap,valloc "
 #--gcc-toolchain=../../third_party/android_ndk/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64 \
 #-Wl,-z,max-page-size=4096 \
 #-Wl,-mllvm,-enable-machine-outliner=never \
@@ -258,26 +262,29 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
   if("${ANDROID_ABI}" STREQUAL "arm64-v8a")
     # linker flags for arm64-v8a only
     set_property(TARGET ${CHROMIUM_BASE_LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
-"-Wl,-z,max-page-size=4096 \
--Wl,-mllvm,-enable-machine-outliner=never"
+" -Wl,-z,max-page-size=4096 \
+-Wl,-mllvm,-enable-machine-outliner=never "
 )
   endif()
-
 
   # linker flags for release build only
   if(NOT "${CMAKE_BUILD_TYPE_LOWER}" STREQUAL "debug")
     set_property(TARGET ${CHROMIUM_BASE_LIB_NAME} APPEND_STRING PROPERTY LINK_FLAGS
-"-Wl,--warn-shared-textrel \
--Wl,-O2"
-#-Wl,--gc-sections"
+" -Wl,--icf=all \
+-Wl,--warn-shared-textrel \
+-Wl,-O2 \
+-Wl,--gc-sections "
 )
   endif()
 
-  find_library(log log)
-  find_library(dl dl)
   find_library(android android)
-  message(STATUS "log: ${log}")
   message(STATUS "android: ${android}")
+
+  find_library(log log)
+  message(STATUS "log: ${log}")
+
+  find_library(dl dl)
+  message(STATUS "dl: ${dl}")
   target_link_libraries(${CHROMIUM_BASE_LIB_NAME} PRIVATE
                         ${CMAKE_CURRENT_LIST_DIR}/android/library_loader/anchor_functions.lds
                         dynamic_annotations
@@ -287,6 +294,19 @@ if(CMAKE_SYSTEM_NAME MATCHES "Android")
                         cpufeatures
                         ${android} ${log} ${dl}
                        )
+
+  find_library(android_support android_support)
+  message(STATUS "android_support: ${android_support}")
+  if (NOT "${android_support}" STREQUAL "android_support-NOTFOUND")
+    target_link_libraries(${CHROMIUM_BASE_LIB_NAME} PRIVATE ${anroid_support})
+  endif()
+
+  # link libunwind for armeabi-v7a build
+  if("${ANDROID_ABI}" STREQUAL "armeabi-v7a")
+    find_library(unwind unwind)
+    message(STATUS "unwind: ${unwind}")
+    target_link_libraries(${CHROMIUM_BASE_LIB_NAME} PRIVATE ${unwind})
+  endif()
 
   add_subdirectory(third_party/dynamic_annotations)
   add_subdirectory(third_party/libevent)
